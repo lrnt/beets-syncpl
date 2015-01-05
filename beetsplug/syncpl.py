@@ -1,7 +1,7 @@
 from beets.plugins import BeetsPlugin
 from beets import ui, config, library
 
-from os import system
+from os import system, fsync
 from os.path import isdir, isfile, join, relpath
 from tempfile import NamedTemporaryFile
 
@@ -70,6 +70,7 @@ def syncpl(lib, opts, args):
     with NamedTemporaryFile() as tmp:
         tmp.write('\n'.join(paths))
         tmp.flush()
+        fsync(tmp.fileno())
 
         system('rsync -amv --include="*/" --include-from=%s --exclude="*" \
                 --delete-excluded %s %s' %
