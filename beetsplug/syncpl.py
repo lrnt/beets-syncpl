@@ -60,7 +60,7 @@ def syncpl(lib, opts, args):
 
     # Retrieve the track and album art paths
     for item in items:
-        paths.add(relpath(item.path, config['directory'].get()))
+        paths.add(relpath(item.path, config['directory'].get().encode('utf-8')))
 
         if item.get_album().artpath:
             paths.add(relpath(item.get_album().artpath,
