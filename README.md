@@ -21,6 +21,7 @@ configuration file. The following section can be used as a reference:
 syncpl:
     dest: /mnt/sdb1
     playlist_dir: /path/to/playlists
+    include_playlist: yes
     to_sync:
         - type: playlist
           name: Summer.m3u
@@ -35,6 +36,8 @@ syncpl:
 * `dest` The directory to which the music will be synchronized. This
   is optional since you can specify the destination as the command argument.
 * `playlist_dir` The directory where *syncpl* can find the playlists to sync.
+* `include_playlist` Also sync the playlist file to the destination (default:
+  yes).
 * `to_sync` A list that specifies the sync items.
     * `type` The type of the sync item, can be either a *playlist* or a *query*.
     * `name` The name of the *playlist* or the *query*.
