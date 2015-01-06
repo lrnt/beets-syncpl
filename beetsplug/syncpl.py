@@ -41,6 +41,7 @@ def syncpl(lib, opts, args):
         raise ui.UserError(u'nothing to sync')
 
     items = set()
+    paths = set()
 
     # Retrieve the items to sync
     for item in config['syncpl']['to_sync'].get():
@@ -49,14 +50,15 @@ def syncpl(lib, opts, args):
 
         if item['type'] == 'playlist':
             get_items = get_playlist_items
+
+            if config['syncpl']['include_playlist']:
+                paths.add(item['name'].encode('utf-8'))
         elif item['type'] == 'query':
             get_items = get_query_items
         else:
             raise ui.UserError(u'invalid to_sync item type')
 
         items.update(get_items(lib, item['name']))
-
-    paths = set()
 
     # Retrieve the track and album art paths
     for item in items:
@@ -73,8 +75,10 @@ def syncpl(lib, opts, args):
         fsync(tmp.fileno())
 
         system('rsync -amv --include="*/" --include-from=%s --exclude="*" \
-                --delete-excluded %s %s' %
-                        (tmp.name, join(config['directory'].get(), ''),
+                --delete-excluded %s %s %s' %
+                        (tmp.name,
+                         join(config['directory'].get(), ''),
+                         join(config['syncpl']['playlist_dir'].get(), ''),
                          config['syncpl']['dest'].get()))
 
 class SyncplPlugin(BeetsPlugin):
@@ -83,6 +87,7 @@ class SyncplPlugin(BeetsPlugin):
         self.config.add({
             u'dest': None,
             u'playlist_dir': None,
+            u'include_playlist': True,
             u'to_sync': [],
         })
 
