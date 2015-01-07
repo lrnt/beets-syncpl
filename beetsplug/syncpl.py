@@ -77,12 +77,14 @@ def syncpl(lib, opts, args):
         tmp.flush()
         fsync(tmp.fileno())
 
+        src = join(config['directory'].get(), '')
+
+        if config['syncpl']['playlist_dir']:
+            src += ' ' + join(config['syncpl']['playlist_dir'].get(), '')
+
         system('rsync -amv --include="*/" --include-from=%s --exclude="*" \
-                --delete-excluded %s %s %s' %
-                        (tmp.name,
-                         join(config['directory'].get(), ''),
-                         join(config['syncpl']['playlist_dir'].get(), ''),
-                         config['syncpl']['dest'].get()))
+                --delete-excluded %s %s' %
+                        (tmp.name, src, config['syncpl']['dest'].get()))
 
 class SyncplPlugin(BeetsPlugin):
     def __init__(self):
