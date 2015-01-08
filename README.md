@@ -34,7 +34,7 @@ syncpl:
 * `include_playlist` Also sync the playlist file to the destination (default:
   yes).
 * `playlists` The list that specifies which playlists to sync.
-* `quries` The list that specifies which queries to sync.
+* `queries` The list that specifies which queries to sync.
 
 Usage
 -----
