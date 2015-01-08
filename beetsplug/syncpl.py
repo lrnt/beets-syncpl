@@ -5,25 +5,6 @@ from os import system, fsync
 from os.path import isdir, isfile, join, relpath
 from tempfile import NamedTemporaryFile
 
-def get_playlist_items(lib, playlist):
-    pl_path = join(config['syncpl']['playlist_dir'].get(), playlist)
-
-    if not isfile(pl_path):
-        raise ui.UserError(u'playlist not found: ' + playlist)
-
-    items = set()
-
-    with open(pl_path, 'r') as f:
-        for path in f.readlines():
-            full_path = join(config['directory'].get(),
-                             path.strip('\n').decode('utf-8'))
-            items.update(lib.items(query=u'path:"%s"' % full_path))
-
-    return items
-
-def get_query_items(lib, query):
-    return set(lib.items(query=query))
-
 def syncpl(lib, opts, args):
     if args:
         config['syncpl']['dest'] = args[0]
@@ -50,14 +31,23 @@ def syncpl(lib, opts, args):
 
     # Retrieve the playlist items to sync
     for playlist in config['syncpl']['playlists'].as_str_seq():
-        items.update(get_playlist_items(lib, playlist))
+        pl_path = join(config['syncpl']['playlist_dir'].get(), playlist)
+
+        if not isfile(pl_path):
+            raise ui.UserError(u'playlist not found: ' + playlist)
+
+        with open(pl_path, 'r') as f:
+            for path in f.readlines():
+                full_path = join(config['directory'].get(),
+                                 path.strip('\n').decode('utf-8'))
+                items.update(lib.items(query=u'path:"%s"' % full_path))
 
         if config['syncpl']['include_playlist']:
             paths.add(playlist.encode('utf-8'))
 
     # Retrieve the query items to sync
     for query in config['syncpl']['queries'].as_str_seq():
-        items.update(get_query_items(lib, query))
+        items.update(lib.items(query=query))
 
     # Retrieve the track and album art paths
     for item in items:
