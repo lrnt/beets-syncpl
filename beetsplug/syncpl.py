@@ -40,28 +40,23 @@ def syncpl(lib, opts, args):
     if not isdir(config['syncpl']['dest'].get()):
         raise ui.UserError(u'invalid destination path')
 
-    if not config['syncpl']['to_sync'].get():
+    if not config['syncpl']['playlists'].get() and \
+       not config['syncpl']['queries'].get():
         raise ui.UserError(u'nothing to sync')
 
     items = set()
     paths = set()
 
-    # Retrieve the items to sync
-    for item in config['syncpl']['to_sync'].get():
-        if not 'type' in item or not 'name' in item:
-            raise ui.UserError(u'invalid to_sync item in configuration')
+    # Retrieve the playlist items to sync
+    for playlist in config['syncpl']['playlists'].as_str_seq():
+        items.update(get_playlist_items(lib, playlist))
 
-        if item['type'] == 'playlist':
-            get_items = get_playlist_items
+        if config['syncpl']['include_playlist']:
+            paths.add(playlist.encode('utf-8'))
 
-            if config['syncpl']['include_playlist']:
-                paths.add(item['name'].encode('utf-8'))
-        elif item['type'] == 'query':
-            get_items = get_query_items
-        else:
-            raise ui.UserError(u'invalid to_sync item type')
-
-        items.update(get_items(lib, item['name']))
+    # Retrieve the query items to sync
+    for query in config['syncpl']['queries'].as_str_seq():
+        items.update(get_query_items(lib, query))
 
     # Retrieve the track and album art paths
     for item in items:
@@ -93,7 +88,8 @@ class SyncplPlugin(BeetsPlugin):
             u'dest': None,
             u'playlist_dir': None,
             u'include_playlist': True,
-            u'to_sync': [],
+            u'playlists': [],
+            u'queries': [],
         })
 
     def commands(self):
