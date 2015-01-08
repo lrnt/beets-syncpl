@@ -6,12 +6,6 @@ from os.path import isdir, isfile, join, relpath
 from tempfile import NamedTemporaryFile
 
 def get_playlist_items(lib, playlist):
-    if not config['syncpl']['playlist_dir'].get():
-        raise ui.UserError(u'no playlist_dir specified')
-
-    if not isdir(config['syncpl']['playlist_dir'].get()):
-        raise ui.UserError(u'invalid playlist_dir')
-
     pl_path = join(config['syncpl']['playlist_dir'].get(), playlist)
 
     if not isfile(pl_path):
@@ -43,6 +37,13 @@ def syncpl(lib, opts, args):
     if not config['syncpl']['playlists'].get() and \
        not config['syncpl']['queries'].get():
         raise ui.UserError(u'nothing to sync')
+
+    if config['syncpl']['playlists'].get():
+        if not config['syncpl']['playlist_dir'].get():
+            raise ui.UserError(u'no playlist_dir specified')
+
+        if not isdir(config['syncpl']['playlist_dir'].get()):
+            raise ui.UserError(u'invalid playlist_dir')
 
     items = set()
     paths = set()
