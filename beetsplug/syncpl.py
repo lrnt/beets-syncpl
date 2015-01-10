@@ -6,6 +6,8 @@ from os.path import isdir, isfile, join, relpath
 from tempfile import NamedTemporaryFile
 
 def syncpl(lib, opts, args):
+    config['syncpl'].set_args(opts)
+
     if args:
         config['syncpl']['dest'] = args[0]
 
@@ -64,13 +66,17 @@ def syncpl(lib, opts, args):
         fsync(tmp.fileno())
 
         src = join(config['directory'].get(), '')
+        options = ''
 
         if config['syncpl']['playlist_dir']:
             src += ' ' + join(config['syncpl']['playlist_dir'].get(), '')
 
+        if config['syncpl']['delete']:
+            options += '--delete-excluded'
+
         system('rsync -amv --include="*/" --include-from=%s --exclude="*" \
-                --delete-excluded %s %s' %
-                        (tmp.name, src, config['syncpl']['dest'].get()))
+                %s %s %s' % (tmp.name, options, src,
+                             config['syncpl']['dest'].get()))
 
 class SyncplPlugin(BeetsPlugin):
     def __init__(self):
@@ -79,11 +85,18 @@ class SyncplPlugin(BeetsPlugin):
             u'dest': None,
             u'playlist_dir': None,
             u'include_playlist': True,
+            u'delete': False,
             u'playlists': [],
             u'queries': [],
         })
 
     def commands(self):
         cmd = ui.Subcommand('syncpl', help='sync music files to a folder')
+        cmd.parser.add_option(
+            '-d', '--delete', action='store_true', default=None,
+            help="delete anything unspecfied in the destination folder")
+        cmd.parser.add_option(
+            '-D', '--nodelete', action='store_false', dest='delete',
+            help="don't delete anything unspecified in the destination folder")
         cmd.func = syncpl
         return [cmd]
