@@ -8,9 +8,6 @@ and queries defined in the beets configuration file.
 This plugin can be used, for example, to sync a selection of your music library
 with a media device.
 
-Please note, this plugin will *delete* files in the destination folder if it's
-no long specified by a playlist or query. You've been warned.
-
 Configuring
 -----------
 
@@ -22,17 +19,20 @@ syncpl:
     dest: /mnt/sdb1
     playlist_dir: /path/to/playlists
     include_playlist: yes
+    delete: no
     playlists: Summer.m3u Winter.m3u
     queries:
         - artist:Jaga Jazzist
         - album:Blue Lines
 ```
 
-* `dest` The directory to which the music will be synchronized. This
-  is optional since you can specify the destination as the command argument.
+* `dest` The directory to which the music will be synchronized. This is optional
+  since you can specify the destination as the command argument.
 * `playlist_dir` The directory where *syncpl* can find the playlists to sync.
 * `include_playlist` Also sync the playlist file to the destination (default:
   yes).
+* `delete` Delete anything unspecified by queries or playlists in the
+  destination folder (default: no).
 * `playlists` The list that specifies which playlists to sync.
 * `queries` The list that specifies which queries to sync.
 
