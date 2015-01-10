@@ -1,9 +1,11 @@
 from beets.plugins import BeetsPlugin
 from beets import ui, config, library
 
-from os import system, fsync
+from os import fsync
 from os.path import isdir, isfile, join, relpath
 from tempfile import NamedTemporaryFile
+from subprocess import Popen, STDOUT, PIPE
+from shlex import split as shsplit
 
 def syncpl(lib, opts, args):
     config['syncpl'].set_args(opts)
@@ -65,18 +67,26 @@ def syncpl(lib, opts, args):
         tmp.flush()
         fsync(tmp.fileno())
 
-        src = join(config['directory'].get(), '')
-        options = ''
+        args = shsplit('rsync -amv --include="*/" --include-from=%s \
+                        --exclude="*"' % tmp.name)
+
+        # Append delete option if specified
+        if config['syncpl']['delete']:
+            args.append('--delete-excluded')
+
+        # Append source(s) to command args
+        args.append(join(config['directory'].get(), ''))
 
         if config['syncpl']['playlist_dir']:
-            src += ' ' + join(config['syncpl']['playlist_dir'].get(), '')
+            args.append(join(config['syncpl']['playlist_dir'].get(), ''))
 
-        if config['syncpl']['delete']:
-            options += '--delete-excluded'
+        # Append destinations to command args
+        args.append(config['syncpl']['dest'].get())
 
-        system('rsync -amv --include="*/" --include-from=%s --exclude="*" \
-                %s %s %s' % (tmp.name, options, src,
-                             config['syncpl']['dest'].get()))
+        # Run rsync and print progress
+        cmd = Popen(args, stdout=PIPE, stderr=STDOUT)
+        for line in iter(cmd.stdout.readline, ""):
+            ui.print_(line.strip('\n'))
 
 class SyncplPlugin(BeetsPlugin):
     def __init__(self):
